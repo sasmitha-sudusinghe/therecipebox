@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Recipe Box</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F6EFDD;
+    --paper-2: #EFE6CC;
+    --ink: #2B2118;
+    --ink-soft: #5B5041;
+    --herb: #3F5C46;
+    --herb-dark: #2C4232;
+    --spice: #C1502E;
+    --mustard: #D9A441;
+    --line: #D8CBAE;
+    --card: #FFFDF6;
+    --shadow: rgba(43, 33, 24, 0.14);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #1E1912;
+      --paper-2: #251F16;
+      --ink: #EFE6D4;
+      --ink-soft: #C4B7A0;
+      --card: #292217;
+      --line: #3C3325;
+      --shadow: rgba(0, 0, 0, 0.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #1E1912;
+    --paper-2: #251F16;
+    --ink: #EFE6D4;
+    --ink-soft: #C4B7A0;
+    --card: #292217;
+    --line: #3C3325;
+    --shadow: rgba(0, 0, 0, 0.4);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  header.top {
+    padding: 48px 24px 28px;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+  .kicker {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+  .brand {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+  }
+  .brand span { color: var(--spice); }
+  .box-toggle {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    padding: 8px 16px;
+    color: var(--ink);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .box-toggle:hover { border-color: var(--spice); }
+  .box-toggle.active { background: var(--herb); border-color: var(--herb); color: #fff; }
+
+  h1.headline {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(34px, 5.5vw, 56px);
+    line-height: 1.04;
+    letter-spacing: -0.015em;
+    margin: 0 0 22px;
+    max-width: 14ch;
+  }
+
+  form.search {
+    display: flex;
+    gap: 10px;
+    max-width: 560px;
+  }
+  .search input {
+    flex: 1;
+    min-width: 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    padding: 14px 18px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--ink);
+    outline: none;
+    transition: border-color .15s ease;
+  }
+  .search input:focus { border-color: var(--herb); }
+  .search button {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 14px 22px;
+    border-radius: 10px;
+    border: none;
+    background: var(--herb);
+    color: #fff;
+    cursor: pointer;
+    transition: background .15s ease;
+    white-space: nowrap;
+  }
+  .search button:hover { background: var(--herb-dark); }
+
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 22px 2px 4px;
+    scrollbar-width: none;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 15px;
+    border-radius: 100px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .chip:hover { border-color: var(--mustard); }
+  .chip.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  .status-line {
+    font-size: 14px;
+    color: var(--ink-soft);
+    padding: 18px 2px 6px;
+    min-height: 20px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 18px;
+    padding-top: 10px;
+  }
+
+  .rcard {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: transform .15s ease, box-shadow .15s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  .rcard:hover { transform: translateY(-3px); box-shadow: 0 10px 24px var(--shadow); }
+  .rcard .punch {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    z-index: 2;
+  }
+  .rcard img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+    background: var(--paper-2);
+  }
+  .rcard .fav-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.92);
+    color: var(--spice);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .rcard .fav-btn.saved { background: var(--spice); color: #fff; }
+  .rcard .body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .rcard .tag {
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--herb);
+  }
+  .rcard h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 18px;
+    margin: 0;
+    line-height: 1.25;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 70px 20px;
+    color: var(--ink-soft);
+  }
+  .empty h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 24px;
+    color: var(--ink);
+    margin: 0 0 8px;
+  }
+  .empty button {
+    margin-top: 16px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    background: var(--herb);
+    color: #fff;
+    cursor: pointer;
+  }
+
+  /* Detail overlay */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 15, 10, 0.55);
+    backdrop-filter: blur(2px);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    z-index: 50;
+    padding: 40px 16px;
+    overflow-y: auto;
+  }
+  .overlay.open { display: flex; }
+  .detail {
+    background: var(--card);
+    max-width: 760px;
+    width: 100%;
+    border-radius: 18px;
+    overflow: hidden;
+    margin-bottom: 40px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+  }
+  .detail-hero { position: relative; }
+  .detail-hero img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
+  .close-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .detail-fav {
+    position: absolute;
+    top: 14px;
+    right: 62px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 17px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .detail-fav.saved { background: var(--spice); }
+  .detail-body { padding: 30px 32px 40px; }
+  .detail-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .dtag {
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--herb);
+    border: 1px solid var(--line);
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+  .detail-body h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(26px, 4vw, 34px);
+    margin: 4px 0 22px;
+    line-height: 1.1;
+  }
+  .detail-cols {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 34px;
+  }
+  @media (max-width: 620px) {
+    .detail-cols { grid-template-columns: 1fr; }
+  }
+  .detail-cols h4 {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
+  }
+  .ing-list { list-style: none; margin: 0; padding: 0; }
+  .ing-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 14.5px;
+  }
+  .ing-list li span:first-child { color: var(--ink); }
+  .ing-list li span:last-child { color: var(--ink-soft); text-align: right; }
+  .instructions {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink);
+    white-space: pre-line;
+  }
+  .yt-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--spice);
+    text-decoration: none;
+  }
+
+  .skel {
+    background: linear-gradient(90deg, var(--paper-2) 25%, var(--line) 37%, var(--paper-2) 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.4s ease infinite;
+    border-radius: 14px;
+    aspect-ratio: 3/3.6;
+  }
+  @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+  footer.credit {
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    padding: 30px 24px 10px;
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="kicker">
+    <div class="brand">The Recipe <span>Box</span></div>
+    <button class="box-toggle" id="boxToggle" type="button">♥ My Box (<span id="boxCount">0</span>)</button>
+  </div>
+  <h1 class="headline">Find something worth cooking tonight.</h1>
+  <form class="search" id="searchForm">
+    <input type="text" id="searchInput" placeholder="Search a dish, or an ingredient you have…" autocomplete="off">
+    <button type="submit">Search</button>
+  </form>
+  <div class="filter-row" id="filterRow"></div>
+</header>
+
+<div class="wrap">
+  <div class="status-line" id="statusLine"></div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<footer class="credit">Recipes courtesy of TheMealDB · built for browsing, not for keeps until you save it</footer>
+
+<div class="overlay" id="overlay">
+  <div class="detail" id="detailBox"></div>
+</div>
+
+<script>
+(function() {
+  const API = 'https://www.themealdb.com/api/json/v1/1/';
+  const grid = document.getElementById('grid');
+  const statusLine = document.getElementById('statusLine');
+  const filterRow = document.getElementById('filterRow');
+  const searchForm = document.getElementById('searchForm');
+  const searchInput = document.getElementById('searchInput');
+  const overlay = document.getElementById('overlay');
+  const detailBox = document.getElementById('detailBox');
+  const boxToggle = document.getElementById('boxToggle');
+  const boxCount = document.getElementById('boxCount');
+
+  let favorites = {};
+  try { favorites = JSON.parse(localStorage.getItem('recipeBoxFavs') || '{}'); } catch (e) { favorites = {}; }
+  let showingBox = false;
+  let activeChip = null;
+
+  function saveFavs() {
+    try { localStorage.setItem('recipeBoxFavs', JSON.stringify(favorites)); } catch (e) {}
+    boxCount.textContent = Object.keys(favorites).length;
+  }
+  saveFavs();
+
+  function toggleFav(meal, btn) {
+    const id = meal.idMeal;
+    if (favorites[id]) {
+      delete favorites[id];
+      if (btn) btn.classList.remove('saved');
+    } else {
+      favorites[id] = { idMeal: id, strMeal: meal.strMeal, strMealThumb: meal.strMealThumb, strCategory: meal.strCategory || '' };
+      if (btn) btn.classList.add('saved');
+    }
+    saveFavs();
+    if (showingBox) renderBox();
+  }
+
+  const CATS = ['Chicken', 'Beef', 'Seafood', 'Vegetarian', 'Pasta', 'Dessert', 'Breakfast'];
+  CATS.forEach(c => {
+    const chip = document.createElement('button');
+    chip.className = 'chip';
+    chip.type = 'button';
+    chip.textContent = c;
+    chip.addEventListener('click', () => {
+      showingBox = false;
+      boxToggle.classList.remove('active');
+      if (activeChip === chip) {
+        activeChip.classList.remove('active');
+        activeChip = null;
+        loadRandom();
+        return;
+      }
+      if (activeChip) activeChip.classList.remove('active');
+      chip.classList.add('active');
+      activeChip = chip;
+      searchInput.value = '';
+      loadByCategory(c);
+    });
+    filterRow.appendChild(chip);
+  });
+
+  function clearChips() {
+    if (activeChip) { activeChip.classList.remove('active'); activeChip = null; }
+  }
+
+  function skeletons(n) {
+    grid.innerHTML = '';
+    for (let i = 0; i < n; i++) {
+      const s = document.createElement('div');
+      s.className = 'skel';
+      grid.appendChild(s);
+    }
+  }
+
+  function emptyState(title, sub, showRandomBtn) {
+    grid.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = 'empty';
+    div.style.gridColumn = '1/-1';
+    div.innerHTML = '<h2>' + title + '</h2><p>' + sub + '</p>' +
+      (showRandomBtn ? '<button id="tryRandom">Surprise me instead</button>' : '');
+    grid.appendChild(div);
+    if (showRandomBtn) {
+      document.getElementById('tryRandom').addEventListener('click', () => {
+        clearChips();
+        loadRandom();
+      });
+    }
+  }
+
+  function cardHTML(meal) {
+    const isFav = !!favorites[meal.idMeal];
+    const card = document.createElement('div');
+    card.className = 'rcard';
+    card.innerHTML =
+      '<span class="punch"></span>' +
+      '<button type="button" class="fav-btn' + (isFav ? ' saved' : '') + '">♥</button>' +
+      '<img loading="lazy" src="' + meal.strMealThumb + '/preview" alt="' + escapeHtml(meal.strMeal) + '">' +
+      '<div class="body">' +
+        '<div class="tag">' + escapeHtml(meal.strCategory || meal.strArea || 'Recipe') + '</div>' +
+        '<h3>' + escapeHtml(meal.strMeal) + '</h3>' +
+      '</div>';
+    card.querySelector('.fav-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFav(meal, e.currentTarget);
+    });
+    card.addEventListener('click', () => openDetail(meal.idMeal));
+    return card;
+  }
+
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+  }
+
+  function renderList(meals) {
+    grid.innerHTML = '';
+    if (!meals || meals.length === 0) {
+      emptyState('Nothing turned up', 'Try a different search, or let us surprise you.', true);
+      return;
+    }
+    meals.forEach(m => grid.appendChild(cardHTML(m)));
+  }
+
+  function renderBox() {
+    const list = Object.values(favorites);
+    statusLine.textContent = list.length ? ('Your saved recipes — ' + list.length + ' kept') : '';
+    if (!list.length) {
+      emptyState('Your box is empty', 'Tap the heart on any recipe to keep it here.', false);
+      return;
+    }
+    renderList(list);
+  }
+
+  async function fetchJSON(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Request failed');
+    return res.json();
+  }
+
+  async function loadRandom() {
+    showingBox = false;
+    boxToggle.classList.remove('active');
+    statusLine.textContent = 'A random pick for you';
+    skeletons(8);
+    try {
+      const picks = [];
+      const seen = new Set();
+      let attempts = 0;
+      while (picks.length < 6 && attempts < 12) {
+        attempts++;
+        const data = await fetchJSON(API + 'random.php');
+        const meal = data.meals && data.meals[0];
+        if (meal && !seen.has(meal.idMeal)) {
+          seen.add(meal.idMeal);
+          picks.push(meal);
+        }
+      }
+      renderList(picks);
+    } catch (e) {
+      emptyState('Couldn\'t load recipes', 'Check your connection and try again.', false);
+    }
+  }
+
+  async function loadByCategory(cat) {
+    statusLine.textContent = 'Browsing ' + cat.toLowerCase();
+    skeletons(8);
+    try {
+      const data = await fetchJSON(API + 'filter.php?c=' + encodeURIComponent(cat));
+      renderList(data.meals);
+    } catch (e) {
+      emptyState('Couldn\'t load recipes', 'Check your connection and try again.', false);
+    }
+  }
+
+  async function loadSearch(query) {
+    showingBox = false;
+    boxToggle.classList.remove('active');
+    clearChips();
+    statusLine.textContent = 'Results for "' + query + '"';
+    skeletons(8);
+    try {
+      // try as a dish name first
+      const byName = await fetchJSON(API + 'search.php?s=' + encodeURIComponent(query));
+      if (byName.meals) {
+        renderList(byName.meals);
+        return;
+      }
+      // fall back to ingredient search
+      const byIngredient = await fetchJSON(API + 'filter.php?i=' + encodeURIComponent(query));
+      if (byIngredient.meals) {
+        statusLine.textContent = 'Recipes using "' + query + '"';
+        renderList(byIngredient.meals);
+        return;
+      }
+      renderList(null);
+    } catch (e) {
+      emptyState('Couldn\'t load recipes', 'Check your connection and try again.', false);
+    }
+  }
+
+  async function openDetail(id) {
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    detailBox.innerHTML = '<div style="padding:60px;text-align:center;color:var(--ink-soft)">Loading…</div>';
+    try {
+      const data = await fetchJSON(API + 'lookup.php?i=' + encodeURIComponent(id));
+      const meal = data.meals && data.meals[0];
+      if (!meal) { detailBox.innerHTML = '<div style="padding:60px;text-align:center">Recipe not found.</div>'; return; }
+      renderDetail(meal);
+    } catch (e) {
+      detailBox.innerHTML = '<div style="padding:60px;text-align:center">Couldn\'t load this recipe.</div>';
+    }
+  }
+
+  function renderDetail(meal) {
+    const ingredients = [];
+    for (let i = 1; i <= 20; i++) {
+      const ing = meal['strIngredient' + i];
+      const measure = meal['strMeasure' + i];
+      if (ing && ing.trim()) {
+        ingredients.push({ name: ing.trim(), measure: (measure || '').trim() });
+      }
+    }
+    const isFav = !!favorites[meal.idMeal];
+    const tags = (meal.strTags || '').split(',').map(t => t.trim()).filter(Boolean);
+
+    detailBox.innerHTML =
+      '<div class="detail-hero">' +
+        '<img src="' + meal.strMealThumb + '" alt="' + escapeHtml(meal.strMeal) + '">' +
+        '<button type="button" class="close-btn" id="closeDetail">✕</button>' +
+        '<button type="button" class="detail-fav' + (isFav ? ' saved' : '') + '" id="detailFavBtn">♥</button>' +
+      '</div>' +
+      '<div class="detail-body">' +
+        '<div class="detail-tags">' +
+          '<span class="dtag">' + escapeHtml(meal.strCategory || '') + '</span>' +
+          '<span class="dtag">' + escapeHtml(meal.strArea || '') + '</span>' +
+          tags.slice(0, 2).map(t => '<span class="dtag">' + escapeHtml(t) + '</span>').join('') +
+        '</div>' +
+        '<h2>' + escapeHtml(meal.strMeal) + '</h2>' +
+        '<div class="detail-cols">' +
+          '<div>' +
+            '<h4>Ingredients</h4>' +
+            '<ul class="ing-list">' +
+              ingredients.map(i => '<li><span>' + escapeHtml(i.name) + '</span><span>' + escapeHtml(i.measure) + '</span></li>').join('') +
+            '</ul>' +
+          '</div>' +
+          '<div>' +
+            '<h4>Instructions</h4>' +
+            '<div class="instructions">' + escapeHtml(meal.strInstructions) + '</div>' +
+            (meal.strYoutube ? '<a class="yt-link" href="' + meal.strYoutube + '" target="_blank" rel="noopener">▶ Watch it made on YouTube</a>' : '') +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    document.getElementById('closeDetail').addEventListener('click', closeDetail);
+    document.getElementById('detailFavBtn').addEventListener('click', (e) => {
+      toggleFav(meal, null);
+      e.currentTarget.classList.toggle('saved');
+    });
+  }
+
+  function closeDetail() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeDetail();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) closeDetail();
+  });
+
+  searchForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const q = searchInput.value.trim();
+    if (q) loadSearch(q);
+  });
+
+  boxToggle.addEventListener('click', () => {
+    showingBox = !showingBox;
+    boxToggle.classList.toggle('active', showingBox);
+    if (showingBox) {
+      clearChips();
+      searchInput.value = '';
+      renderBox();
+    } else {
+      loadRandom();
+    }
+  });
+
+  // initial load
+  loadRandom();
+})();
+</script>
+
+</body>
+</html>
